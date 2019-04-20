@@ -30,20 +30,11 @@ class DatabaseManager {
         return (databaseConnection != nil)
     }
     
-    var lastErrorMessage: String? {
-        didSet {
-            if let lastErrorMessage = lastErrorMessage {
-                print("[MJ] DatabaseManager: " + lastErrorMessage)
-            }
-        }
-    }
-    
     
     //MARK: - Initializers.
-    init() {
+    fileprivate init() {
         //1. Initialize variables.
         databaseConnection = nil
-        lastErrorMessage = nil
         
         //2. Establish database connection.
         let databaseURL = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
@@ -51,12 +42,14 @@ class DatabaseManager {
         
         if (sqlite3_open(databaseURL.path, &databaseConnection) != SQLITE_OK) {
             databaseConnection = nil
-            lastErrorMessage = "Failed to open database!"
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.fatalError, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to open database!")
         }
         
         //3. Create table if it does not exist.
         if (isDatabaseConnectionEstablished) {
-            self.createTable()
+            if (!self.createTable()) {
+                ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to create table!")
+            }
         }
     }
     
@@ -73,12 +66,12 @@ class DatabaseManager {
      */
     func createTable() -> Bool {
         if (!isDatabaseConnectionEstablished) {
-            lastErrorMessage = "`databaseConnection` is `nil`!"
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return false
         }
         
         if (sqlite3_exec(databaseConnection, "CREATE TABLE IF NOT EXISTS " + DatabaseManager.workSegmentsTableName + " (segmentID INTEGER, startWorkingTimestamp INTEGER NOT NULL, stopWorkingTimestamp INTEGER NOT NULL, PRIMARY KEY (segmentID));", nil, nil, nil) != SQLITE_OK) {
-            lastErrorMessage = "Error when creating table: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when creating table: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
@@ -92,7 +85,7 @@ class DatabaseManager {
      */
     func getAllWorkSegments() -> [(Int64, Int64, Int64)]? {
         if (!isDatabaseConnectionEstablished) {
-            lastErrorMessage = "`databaseConnection` is `nil`!"
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
         }
         
@@ -100,7 +93,7 @@ class DatabaseManager {
         let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName
         
         if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
-            lastErrorMessage = "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
         
@@ -122,7 +115,7 @@ class DatabaseManager {
      */
     func getWorkSegmentsWithinInternalIDRange(startID: Int64, endID: Int64) -> [(Int64, Int64, Int64)]? {
         if (!isDatabaseConnectionEstablished) {
-            lastErrorMessage = "`databaseConnection` is `nil`!"
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
         }
         
@@ -130,17 +123,17 @@ class DatabaseManager {
         let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName + " WHERE segmentID>=? AND segmentID<=?"
         
         if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
-            lastErrorMessage = "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
         
         if (sqlite3_bind_int64(statement, 1, startID) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `startIndex`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `startIndex`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
         
         if (sqlite3_bind_int64(statement, 2, endID) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `endIndex`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `endIndex`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
         
@@ -163,7 +156,7 @@ class DatabaseManager {
      */
     func addAWorkSegment(startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64) -> Bool {
         if (!isDatabaseConnectionEstablished) {
-            lastErrorMessage = "`databaseConnection` is `nil`!"
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return false
         }
         
@@ -171,22 +164,22 @@ class DatabaseManager {
         let queryString = "INSERT INTO " + DatabaseManager.workSegmentsTableName + " VALUES(NULL, ?, ?)"
         
         if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
-            lastErrorMessage = "Error when preparing INSERT: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing INSERT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_bind_int64(statement, 1, startWorkingTimestamp) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `startWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `startWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_bind_int64(statement, 2, stopWorkingTimestamp) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `stopWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `stopWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_step(statement) != SQLITE_DONE) {
-            lastErrorMessage = "Error when executing INSERT: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when executing INSERT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
@@ -200,7 +193,7 @@ class DatabaseManager {
      */
     func updateSegmentTimestamps(segmentID: Int64, newStartWorkingTimestamp: Int64, newStopWorkingTimestamp: Int64) -> Bool {
         if (!isDatabaseConnectionEstablished) {
-            lastErrorMessage = "`databaseConnection` is `nil`!"
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return false
         }
         
@@ -208,27 +201,27 @@ class DatabaseManager {
         let queryString = "UPDATE " + DatabaseManager.workSegmentsTableName + " SET startWorkingTimestamp=?, stopWorkingTimestamp=? WHERE segmentID=?"
         
         if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
-            lastErrorMessage = "Error when preparing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_bind_int64(statement, 1, newStartWorkingTimestamp) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `newStartWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `newStartWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_bind_int64(statement, 2, newStopWorkingTimestamp) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `newStopWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `newStopWorkingTimestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_bind_int64(statement, 3, segmentID) != SQLITE_OK) {
-            lastErrorMessage = "Error when binding `segmentID`: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `segmentID`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
         if (sqlite3_step(statement) != SQLITE_DONE) {
-            lastErrorMessage = "Error when executing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!)
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when executing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
         
