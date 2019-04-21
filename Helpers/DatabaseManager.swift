@@ -75,6 +75,16 @@ class DatabaseManager {
             return false
         }
         
+        if (sqlite3_exec(databaseConnection, "CREATE INDEX IF NOT EXISTS WorkSegments_startWorkingTimestamp ON WorkSegments (startWorkingTimestamp);", nil, nil, nil) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when creating index: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+//        if (sqlite3_exec(databaseConnection, "CREATE INDEX IF NOT EXISTS WorkSegments_stopWorkingTimestamp ON WorkSegments (stopWorkingTimestamp);", nil, nil, nil) != SQLITE_OK) {
+//            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when creating index: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+//            return false
+//        }
+        
         return true
     }
     
@@ -83,7 +93,7 @@ class DatabaseManager {
     /**
      * - Returns: (segmentID, startWorkingTimestamp, stopWorkingTimestamp)
      */
-    func getAllWorkSegments() -> [(Int64, Int64, Int64)]? {
+    func getAllWorkSegments() -> [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]? {
         if (!isDatabaseConnectionEstablished) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
@@ -97,7 +107,41 @@ class DatabaseManager {
             return nil
         }
         
-        var returnValue = [(Int64, Int64, Int64)]()
+        var returnValue = [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]()
+        while (sqlite3_step(statement) == SQLITE_ROW) {
+            let segmentID = sqlite3_column_int64(statement, 0)
+            let startWorkingTimestamp = sqlite3_column_int64(statement, 1)
+            let stopWorkingTimestamp = sqlite3_column_int64(statement, 2)
+            
+            returnValue.append((segmentID, startWorkingTimestamp, stopWorkingTimestamp))
+        }
+        
+        return returnValue
+    }
+    
+    /**
+     * Get all work segments that starts at or after the given timestamp.
+     */
+    func getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: Int64) -> [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]? {
+        if (!isDatabaseConnectionEstablished) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
+            return nil
+        }
+        
+        var statement: OpaquePointer?
+        let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName + " WHERE startWorkingTimestamp>=?"
+        
+        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error , fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return nil
+        }
+        
+        if (sqlite3_bind_int64(statement, 1, timestamp) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `timestamp`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return nil
+        }
+        
+        var returnValue = [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]()
         while (sqlite3_step(statement) == SQLITE_ROW) {
             let segmentID = sqlite3_column_int64(statement, 0)
             let startWorkingTimestamp = sqlite3_column_int64(statement, 1)
@@ -111,9 +155,8 @@ class DatabaseManager {
     
     /**
      * - Note: Both IDs are **inclusive**.
-     * - Returns: (segmentID, startWorkingTimestamp, stopWorkingTimestamp)
      */
-    func getWorkSegmentsWithinInternalIDRange(startID: Int64, endID: Int64) -> [(Int64, Int64, Int64)]? {
+    func getWorkSegmentsWithinInternalIDRange(startID: Int64, endID: Int64) -> [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]? {
         if (!isDatabaseConnectionEstablished) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
@@ -137,7 +180,7 @@ class DatabaseManager {
             return nil
         }
         
-        var returnValue = [(Int64, Int64, Int64)]()
+        var returnValue = [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]()
         while (sqlite3_step(statement) == SQLITE_ROW) {
             let segmentID = sqlite3_column_int64(statement, 0)
             let startWorkingTimestamp = sqlite3_column_int64(statement, 1)

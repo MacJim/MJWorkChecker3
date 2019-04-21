@@ -8,3 +8,8 @@ CREATE TABLE IF NOT EXISTS WorkSegments (
 
     PRIMARY KEY (segmentID)
 );
+
+
+CREATE INDEX IF NOT EXISTS WorkSegments_startWorkingTimestamp ON WorkSegments (startWorkingTimestamp);
+
+-- CREATE INDEX IF NOT EXISTS WorkSegments_stopWorkingTimestamp ON WorkSegments (stopWorkingTimestamp);    -- Currently not used.
