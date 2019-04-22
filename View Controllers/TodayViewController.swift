@@ -32,16 +32,30 @@ class TodayViewController: UIViewController {
     }
     
     
-    //MARK: - View did load.
+    //MARK: - View presenting stuff.
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
         updateTodayWorkDurationLabelText()
         updateStartOrStopWorkingButtonText()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
         if (WorkingSessionsManager.shared.isWorkStarted) {
             startUpdatingTodayWorkDurationLabelText()
         }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        stopUpdatingTodayWorkDurationLabelText()
     }
     
     
@@ -54,6 +68,7 @@ class TodayViewController: UIViewController {
     }
     private func stopUpdatingTodayWorkDurationLabelText() {
         updateTodayWorkDurationLabelTextTimer?.invalidate()
+        updateTodayWorkDurationLabelTextTimer = nil
     }
     
     @objc private func updateTodayWorkDurationLabelText() {
