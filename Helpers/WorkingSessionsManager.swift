@@ -58,17 +58,48 @@ class WorkingSessionsManager {
      * Today working duration in seconds.
      */
     var todayWorkingDuration: Int64 {
-        //TODO:
-        return 0
-        let startOfToday = Date().startOfDay
+        var totalWorkingDuration: Int64 = 0
+        
+        //1. Work segments in database.
+        let startOfTodayTimestamp = Int64(Date().startOfDay.timeIntervalSince1970)
+        let todayWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfTodayTimestamp)
+        if let todayWorkSegments = todayWorkSegments {
+            for aSegment in todayWorkSegments {
+                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
+                totalWorkingDuration += segmentWorkDuration
+            }
+        }
+        
+        //2. Current working session.
+        if (isWorkStarted) {
+            totalWorkingDuration += currentSessionWorkingDuration!
+        }
+        
+        return totalWorkingDuration
     }
     
     /**
      * Past 7 days (including today) working duration in seconds.
      */
     var past7DaysWorkingDuration: Int64 {
-        //TODO:
-        return 0
+        var totalWorkingDuration: Int64 = 0
+        
+        //1. Work segments in database.
+        let startOfPrevious7DayStreakTimestamp = Int64(Date().startOfPrevious7DayStreak.timeIntervalSince1970)
+        let past7DaysWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfPrevious7DayStreakTimestamp)
+        if let past7DaysWorkSegments = past7DaysWorkSegments {
+            for aSegment in past7DaysWorkSegments {
+                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
+                totalWorkingDuration += segmentWorkDuration
+            }
+        }
+        
+        //2. Current working session.
+        if (isWorkStarted) {
+            totalWorkingDuration += currentSessionWorkingDuration!
+        }
+        
+        return totalWorkingDuration
     }
     
     
@@ -101,6 +132,7 @@ class WorkingSessionsManager {
         
         if (startWorkingDate < startOfTodayTimestamp) {
             //This segment started and ended on different days.
+            //In this case, the segment will be split to smaller segments starting and stopping on the same day.
             var segments = [(startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)]()
             
             var currentSegmentStartWorkingDate = startWorkingDate
