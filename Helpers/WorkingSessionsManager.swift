@@ -53,56 +53,6 @@ class WorkingSessionsManager {
     }
     
     
-    //MARK: - Today / past 7 days working duration.
-    /**
-     * Today working duration in seconds.
-     */
-    var todayWorkingDuration: Int64 {
-        var totalWorkingDuration: Int64 = 0
-        
-        //1. Work segments in database.
-        let startOfTodayTimestamp = Int64(Date().startOfDay.timeIntervalSince1970)
-        let todayWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfTodayTimestamp)
-        if let todayWorkSegments = todayWorkSegments {
-            for aSegment in todayWorkSegments {
-                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
-                totalWorkingDuration += segmentWorkDuration
-            }
-        }
-        
-        //2. Current working session.
-        if (isWorkStarted) {
-            totalWorkingDuration += currentSessionWorkingDuration!
-        }
-        
-        return totalWorkingDuration
-    }
-    
-    /**
-     * Past 7 days (including today) working duration in seconds.
-     */
-    var past7DaysWorkingDuration: Int64 {
-        var totalWorkingDuration: Int64 = 0
-        
-        //1. Work segments in database.
-        let startOfPrevious7DayStreakTimestamp = Int64(Date().startOfPrevious7DayStreak.timeIntervalSince1970)
-        let past7DaysWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfPrevious7DayStreakTimestamp)
-        if let past7DaysWorkSegments = past7DaysWorkSegments {
-            for aSegment in past7DaysWorkSegments {
-                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
-                totalWorkingDuration += segmentWorkDuration
-            }
-        }
-        
-        //2. Current working session.
-        if (isWorkStarted) {
-            totalWorkingDuration += currentSessionWorkingDuration!
-        }
-        
-        return totalWorkingDuration
-    }
-    
-    
     //MARK: - Start / stop working.
     func startWorking() {
         if (isWorkStarted) {
@@ -159,6 +109,53 @@ class WorkingSessionsManager {
     }
     
     
-    //MARK: - Working history.
+    //MARK: - Today / past 7 days working duration.
+    /**
+     * Today working duration in seconds.
+     */
+    var todayWorkingDuration: Int64 {
+        var totalWorkingDuration: Int64 = 0
+        
+        //1. Work segments in database.
+        let startOfTodayTimestamp = Int64(Date().startOfDay.timeIntervalSince1970)
+        let todayWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfTodayTimestamp)
+        if let todayWorkSegments = todayWorkSegments {
+            for aSegment in todayWorkSegments {
+                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
+                totalWorkingDuration += segmentWorkDuration
+            }
+        }
+        
+        //2. Current working session.
+        if (isWorkStarted) {
+            totalWorkingDuration += currentSessionWorkingDuration!
+        }
+        
+        return totalWorkingDuration
+    }
+    
+    /**
+     * Past 7 days (including today) working duration in seconds.
+     */
+    var past7DaysWorkingDuration: Int64 {
+        var totalWorkingDuration: Int64 = 0
+        
+        //1. Work segments in database.
+        let startOfPrevious7DayStreakTimestamp = Int64(Date().startOfPrevious7DayStreak.timeIntervalSince1970)
+        let past7DaysWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfPrevious7DayStreakTimestamp)
+        if let past7DaysWorkSegments = past7DaysWorkSegments {
+            for aSegment in past7DaysWorkSegments {
+                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
+                totalWorkingDuration += segmentWorkDuration
+            }
+        }
+        
+        //2. Current working session.
+        if (isWorkStarted) {
+            totalWorkingDuration += currentSessionWorkingDuration!
+        }
+        
+        return totalWorkingDuration
+    }
 }
 

@@ -1,5 +1,5 @@
 //
-//  FirstViewController.swift
+//  SecondViewController.swift
 //  MJWorkChecker3
 //
 //  Created by Jim Macintosh Shi on 4/17/19.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-class FirstViewController: UIViewController {
+class StatisticsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

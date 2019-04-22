@@ -1,0 +1,83 @@
+//
+//  TodayViewController.swift
+//  MJWorkChecker3
+//
+//  Created by Jim Macintosh Shi on 4/17/19.
+//  Copyright © 2019 Creative Sub. All rights reserved.
+//
+
+import UIKit
+
+class TodayViewController: UIViewController {
+    //MARK: - IB outlets.
+    @IBOutlet weak var todayWorkDurationLabel: UILabel!
+    @IBOutlet weak var startOrStopWorkingButton: UIButton!
+
+    
+    //MARK: - IB actions.
+    @IBAction func startOrStopWorkingButtonPressed(_ sender: UIButton) {
+        let workingSessionsManager = WorkingSessionsManager.shared
+        if (workingSessionsManager.isWorkStarted) {
+            //Stop current working session.
+            workingSessionsManager.stopWorking()
+            stopUpdatingTodayWorkDurationLabelText()
+            updateTodayWorkDurationLabelText()
+        } else {
+            //Start a working session.
+            workingSessionsManager.startWorking()
+            startUpdatingTodayWorkDurationLabelText()
+        }
+        
+        updateStartOrStopWorkingButtonText()
+    }
+    
+    
+    //MARK: - View did load.
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        updateTodayWorkDurationLabelText()
+        updateStartOrStopWorkingButtonText()
+        
+        if (WorkingSessionsManager.shared.isWorkStarted) {
+            startUpdatingTodayWorkDurationLabelText()
+        }
+    }
+    
+    
+    //MARK: - Today work duration label text update.
+    private var updateTodayWorkDurationLabelTextTimer: Timer?
+    
+    private func startUpdatingTodayWorkDurationLabelText() {
+        updateTodayWorkDurationLabelTextTimer?.invalidate()
+        updateTodayWorkDurationLabelTextTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(TodayViewController.updateTodayWorkDurationLabelText), userInfo: nil, repeats: true)
+    }
+    private func stopUpdatingTodayWorkDurationLabelText() {
+        updateTodayWorkDurationLabelTextTimer?.invalidate()
+    }
+    
+    @objc private func updateTodayWorkDurationLabelText() {
+        var todayWorkingDuration = WorkingSessionsManager.shared.todayWorkingDuration
+        
+        let hour = todayWorkingDuration / 3600
+        todayWorkingDuration -= hour * 3600
+        
+        let minute = todayWorkingDuration / 60
+        todayWorkingDuration -= minute * 60
+        
+        let second = todayWorkingDuration
+        
+        todayWorkDurationLabel.text = "\(hour):\(minute):\(second)"
+    }
+    
+    
+    //MARK: - Start / stop working button text update.
+    private func updateStartOrStopWorkingButtonText() {
+        if (WorkingSessionsManager.shared.isWorkStarted) {
+            startOrStopWorkingButton.setTitle("Stop", for: UIControl.State.normal)
+        } else {
+            startOrStopWorkingButton.setTitle("Start", for: UIControl.State.normal)
+        }
+    }
+}
+
