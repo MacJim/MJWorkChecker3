@@ -34,8 +34,13 @@ extension TimeInterval {
         var returnValue = ""
         
         let hours = totalSeconds / 3600
-        totalSeconds -= hours * 3600
-        returnValue += "\(hours):"
+        if (hours != 0) {
+            totalSeconds -= hours * 3600
+            if (hours < 10) {
+                returnValue += "0"
+            }
+            returnValue += "\(hours):"
+        }
         
         let minutes = totalSeconds / 60
         totalSeconds -= minutes * 60
