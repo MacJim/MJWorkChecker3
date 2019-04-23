@@ -25,6 +25,10 @@ class StatisticsViewController: UIViewController {
     //MARK: - View presenting stuff.
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //Set monospace system font.
+        past7DaysWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: past7DaysWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
+        past30DaysWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: past30DaysWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
     }
     
     override func viewWillAppear(_ animated: Bool) {

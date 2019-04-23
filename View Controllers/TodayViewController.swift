@@ -35,6 +35,9 @@ class TodayViewController: UIViewController {
     //MARK: - View presenting stuff.
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //Set monospace system font.
+        todayWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: todayWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
     }
     
     override func viewWillAppear(_ animated: Bool) {
