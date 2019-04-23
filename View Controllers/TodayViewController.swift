@@ -72,17 +72,9 @@ class TodayViewController: UIViewController {
     }
     
     @objc private func updateTodayWorkDurationLabelText() {
-        var todayWorkingDuration = WorkingSessionsManager.shared.todayWorkingDuration
+        let todayWorkingDuration = WorkingSessionsManager.shared.todayWorkingDuration
         
-        let hour = todayWorkingDuration / 3600
-        todayWorkingDuration -= hour * 3600
-        
-        let minute = todayWorkingDuration / 60
-        todayWorkingDuration -= minute * 60
-        
-        let second = todayWorkingDuration
-        
-        todayWorkDurationLabel.text = "\(hour):\(minute):\(second)"
+        todayWorkDurationLabel.text = TimeInterval.convertSecondsToFormattedString(seconds: todayWorkingDuration)
     }
     
     

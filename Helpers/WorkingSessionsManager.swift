@@ -157,5 +157,29 @@ class WorkingSessionsManager {
         
         return totalWorkingDuration
     }
+    
+    /**
+     * Past 30 days (including today) working duration in seconds.
+     */
+    var past30DaysWorkingDuration: Int64 {
+        var totalWorkingDuration: Int64 = 0
+        
+        //1. Work segments in database.
+        let startOfPrevious30DayStreakTimestamp = Int64(Date().startOfPrevious30DayStreak.timeIntervalSince1970)
+        let past30DaysWorkSegments = DatabaseManager.shared.getWorkSegmentsStartingAtOrAfterTimestamp(timestamp: startOfPrevious30DayStreakTimestamp)
+        if let past30DaysWorkSegments = past30DaysWorkSegments {
+            for aSegment in past30DaysWorkSegments {
+                let segmentWorkDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
+                totalWorkingDuration += segmentWorkDuration
+            }
+        }
+        
+        //2. Current working session.
+        if (isWorkStarted) {
+            totalWorkingDuration += currentSessionWorkingDuration!
+        }
+        
+        return totalWorkingDuration
+    }
 }
 
