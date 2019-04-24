@@ -270,4 +270,36 @@ class DatabaseManager {
         
         return true
     }
+
+
+    //MARK: - DELETE
+    /**
+     * - Returns: `true` on success; `false` on failure.
+     */
+    func deleteASegment(segmentID: Int64) -> Bool {
+        if (!isDatabaseConnectionEstablished) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
+            return false
+        }
+        
+        var statement: OpaquePointer?
+        let queryString = "DELETE FROM " + DatabaseManager.workSegmentsTableName + " WHERE segmentID=?"
+        
+        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing DELETE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+        if (sqlite3_bind_int64(statement, 1, segmentID) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `segmentID`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+        if (sqlite3_step(statement) != SQLITE_DONE) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when executing DELETE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+        return true
+    }
 }
