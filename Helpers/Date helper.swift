@@ -34,3 +34,10 @@ extension Date {
         return Calendar.current.date(byAdding: tempDateComponents, to: startOfDay)!
     }
 }
+
+extension Date {
+    public var components: (year: Int, month: Int, day: Int) {
+        let calendar = Calendar.current
+        return (calendar.component(.year, from: self), calendar.component(.month, from: self), calendar.component(.day, from: self))
+    }
+}
