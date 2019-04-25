@@ -128,7 +128,14 @@ class WorkingSessionsManager {
         
         //2. Current working session.
         if (isWorkStarted) {
-            totalWorkingDuration += currentSessionWorkingDuration!
+            if (startWorkingTimestamp! >= startOfTodayTimestamp) {
+                //Current session started today.
+                totalWorkingDuration += currentSessionWorkingDuration!
+            } else {
+                //Current session started on a previous day.
+                let currentDate = Date()
+                totalWorkingDuration += Int64(currentDate.timeIntervalSince(currentDate.startOfDay))
+            }
         }
         
         return totalWorkingDuration
@@ -152,7 +159,14 @@ class WorkingSessionsManager {
         
         //2. Current working session.
         if (isWorkStarted) {
-            totalWorkingDuration += currentSessionWorkingDuration!
+            if (startWorkingTimestamp! >= startOfPrevious7DayStreakTimestamp) {
+                //Current session started in the previous 7 days.
+                totalWorkingDuration += currentSessionWorkingDuration!
+            } else {
+                //Current session started on a previous day.
+                let currentDate = Date()
+                totalWorkingDuration += Int64(currentDate.timeIntervalSince(currentDate.startOfPrevious7DayStreak))
+            }
         }
         
         return totalWorkingDuration
@@ -176,7 +190,14 @@ class WorkingSessionsManager {
         
         //2. Current working session.
         if (isWorkStarted) {
-            totalWorkingDuration += currentSessionWorkingDuration!
+            if (startWorkingTimestamp! >= startOfPrevious30DayStreakTimestamp) {
+                //Current session started in the previous 30 days.
+                totalWorkingDuration += currentSessionWorkingDuration!
+            } else {
+                //Current session started on a previous day.
+                let currentDate = Date()
+                totalWorkingDuration += Int64(currentDate.timeIntervalSince(currentDate.startOfPrevious30DayStreak))
+            }
         }
         
         return totalWorkingDuration
