@@ -27,6 +27,9 @@ class WorkingSessionsManager {
         } else {
             startWorkingTimestamp = nil
         }
+        
+        isProcessedAllWorkSegmentsDataUpToDate = false
+        processedAllWorkSegmentsData = [Int: [Int: [Int: (totalWorkingDuration: Int64, segments: [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)])]]]()
     }
     
     
@@ -201,6 +204,58 @@ class WorkingSessionsManager {
         }
         
         return totalWorkingDuration
+    }
+    
+    
+    //MARK: - Raw data table view data.
+    ///Dirty. If `false`, `processedAllWorkSegmentsCache` is not up to date.
+    var isProcessedAllWorkSegmentsDataUpToDate: Bool
+    /**
+     * [year: [month: [day: (total working duration, [(segment ID in database, work duration)])]]]
+     */
+    var processedAllWorkSegmentsData: [Int: [Int: [Int: (totalWorkingDuration: Int64, segments: [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)])]]]
+    
+    private func addAWorkSegmentToProcessedAllWorkSegmentsData(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64) {
+        let segmentWorkingDuration = stopWorkingTimestamp - startWorkingTimestamp
+        
+        let startDate = Date(timeIntervalSince1970: TimeInterval(startWorkingTimestamp))
+        let startDateComponents = startDate.components
+        let year = startDateComponents.year
+        let month = startDateComponents.month
+        let day = startDateComponents.day
+        
+        //Initialize the dictionary if it's not fully initialized.
+        if (processedAllWorkSegmentsData[year] == nil) {
+            processedAllWorkSegmentsData[year] = [Int: [Int: (totalWorkingDuration: Int64, segments: [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)])]]()
+        }
+        
+        if (processedAllWorkSegmentsData[year]?[month] == nil) {
+            processedAllWorkSegmentsData[year]?[month] = [Int: (totalWorkingDuration: Int64, segments: [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)])]()
+        }
+        
+        if (processedAllWorkSegmentsData[year]?[month]?[day] == nil) {
+            processedAllWorkSegmentsData[year]?[month]?[day] = (totalWorkingDuration: 0, segments: [])
+        }
+        
+        processedAllWorkSegmentsData[year]?[month]?[day]?.totalWorkingDuration += segmentWorkingDuration
+        processedAllWorkSegmentsData[year]?[month]?[day]?.segments.append((segmentID, startWorkingTimestamp, stopWorkingTimestamp))
+    }
+    
+    /**
+     * Loads all work segments data from database.
+     */
+    private func loadTableViewDataFromDatabase() {
+        if let allWorkSegments = DatabaseManager.shared.getAllWorkSegments() {
+            for aWorkSegment in allWorkSegments {
+                let segmentID = aWorkSegment.segmentID
+
+                addAWorkSegmentToProcessedAllWorkSegmentsData(segmentID: segmentID, startWorkingTimestamp: aWorkSegment.startWorkingTimestamp, stopWorkingTimestamp: aWorkSegment.stopWorkingTimestamp)
+            }
+        } else {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get all work segments from DatabaseManager.")
+        }
+        
+        isProcessedAllWorkSegmentsDataUpToDate = true
     }
 }
 
