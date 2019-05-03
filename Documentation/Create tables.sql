@@ -4,6 +4,8 @@
 CREATE TABLE IF NOT EXISTS Days (
     dayID INTEGER,
 
+    startOfDayTimestamp INTEGER NOT NULL,    -- The day's start timestamp. Used for sorting and finding days.
+
     year INTEGER,    -- 2019
 
     month INTEGER,    -- 11
@@ -15,6 +17,8 @@ CREATE TABLE IF NOT EXISTS Days (
 
     PRIMARY KEY (dayID)
 );
+
+CREATE INDEX IF NOT EXISTS Days_startOfDayTimestamp ON Days(startOfDayTimestamp);
 
 -- CREATE INDEX IF NOT EXISTS Days_month ON Days(month);    -- Currently not used.
 
