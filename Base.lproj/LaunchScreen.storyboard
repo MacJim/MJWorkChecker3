@@ -13,7 +13,6 @@
         <!--View Controller-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
@@ -25,6 +24,7 @@
                                 <items>
                                     <tabBarItem id="Ffz-ef-LIq"/>
                                     <tabBarItem id="UAq-dG-pf0"/>
+                                    <tabBarItem title="" id="9qB-L6-L9s"/>
                                 </items>
                             </tabBar>
                         </subviews>
@@ -38,6 +38,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="6fv-6V-Dcg"/>
                 </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="940" y="366"/>
         </scene>

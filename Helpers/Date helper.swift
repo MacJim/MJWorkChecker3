@@ -41,3 +41,35 @@ extension Date {
         return (calendar.component(.year, from: self), calendar.component(.month, from: self), calendar.component(.day, from: self))
     }
 }
+
+extension DateFormatter {
+    /**
+     * Date format reference: https://www.codingexplorer.com/swiftly-getting-human-readable-date-nsdateformatter/
+     */
+    public class func getFormattedDateStringFromAnotherFormattedDateString(sourceDateString: String, sourceDateFormat: String, resultDateFormat: String) -> String? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = sourceDateFormat
+        
+        guard let date = formatter.date(from: sourceDateString) else {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DateFormatter", functionName: #function, lineNumber: #line, errorDescription: "Failed to initialize date from source date string \"\(sourceDateString)\" and souce date format \"\(sourceDateFormat)\"")
+            return nil
+        }
+        
+        formatter.dateFormat = resultDateFormat
+        return formatter.string(from: date)
+    }
+    
+    public class func getFormattedDateStringFromAnotherFormattedDateString(sourceDateString: String, sourceDateFormat: String, resultDateStyle: DateFormatter.Style) -> String? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = sourceDateFormat
+        
+        guard let date = formatter.date(from: sourceDateString) else {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DateFormatter", functionName: #function, lineNumber: #line, errorDescription: "Failed to initialize date from source date string \"\(sourceDateString)\" and souce date format \"\(sourceDateFormat)\"")
+            return nil
+        }
+        
+        formatter.dateStyle = resultDateStyle
+        return formatter.string(from: date)
+    }
+}
+

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -74,7 +74,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8NF-8a-xeK" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1674" y="-308"/>
+            <point key="canvasLocation" x="1673" y="-305"/>
         </scene>
         <!--Statistics-->
         <scene sceneID="T6d-Oy-LZl">
@@ -173,7 +173,77 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="663-2F-GXR" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1674.4000000000001" y="409.7451274362819"/>
+            <point key="canvasLocation" x="1673" y="405"/>
+        </scene>
+        <!--Raw data-->
+        <scene sceneID="9mT-xJ-DtN">
+            <objects>
+                <navigationController id="HmR-Hc-5vZ" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Raw data" id="qZW-TT-4fc"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="dXL-pJ-t8S">
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="ai3-6P-E5c" kind="relationship" relationship="rootViewController" id="cvL-al-tZ0"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Snz-hw-L8n" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="825" y="1119"/>
+        </scene>
+        <!--Raw Data-->
+        <scene sceneID="m3L-yb-lao">
+            <objects>
+                <tableViewController id="ai3-6P-E5c" customClass="RawDataViewController" customModule="MJWorkChecker3" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="Lch-qx-OTX">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="RawDataTableViewCell" id="Icb-h1-lqb" customClass="RawDataTableViewCell" customModule="MJWorkChecker3" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Icb-h1-lqb" id="WA2-9j-k4Y">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="May 21, 2019" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zvc-I8-3Qk">
+                                            <rect key="frame" x="16" y="11.5" width="101" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0:00:00" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vOd-iW-geE">
+                                            <rect key="frame" x="298" y="11.5" width="61" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="zvc-I8-3Qk" firstAttribute="leading" secondItem="WA2-9j-k4Y" secondAttribute="leadingMargin" id="0RG-Fw-PhE"/>
+                                        <constraint firstItem="vOd-iW-geE" firstAttribute="trailing" secondItem="WA2-9j-k4Y" secondAttribute="trailingMargin" id="ZLi-ma-LS7"/>
+                                        <constraint firstItem="vOd-iW-geE" firstAttribute="centerY" secondItem="WA2-9j-k4Y" secondAttribute="centerY" id="avX-Zd-qi0"/>
+                                        <constraint firstItem="zvc-I8-3Qk" firstAttribute="centerY" secondItem="WA2-9j-k4Y" secondAttribute="centerY" id="kWw-mY-zFf"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="dateLable" destination="zvc-I8-3Qk" id="ggB-ek-F6a"/>
+                                    <outlet property="workingDurationLabel" destination="vOd-iW-geE" id="V6G-LZ-6cu"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="ai3-6P-E5c" id="2Q3-7F-hVv"/>
+                            <outlet property="delegate" destination="ai3-6P-E5c" id="TRe-3C-2X5"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Raw Data" id="gh7-Rf-Gdv"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="gEq-8d-rLk" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1673" y="1119"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="yl2-sM-qoP">
@@ -187,6 +257,7 @@
                     <connections>
                         <segue destination="1aJ-Sy-zgZ" kind="relationship" relationship="viewControllers" id="dsz-X3-0Sx"/>
                         <segue destination="NnS-R5-Fzi" kind="relationship" relationship="viewControllers" id="njR-rq-1sz"/>
+                        <segue destination="HmR-Hc-5vZ" kind="relationship" relationship="viewControllers" id="nJW-jx-GKc"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HuB-VB-40B" sceneMemberID="firstResponder"/>

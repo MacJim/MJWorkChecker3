@@ -129,6 +129,11 @@ class WorkingSessionsManager {
         startWorkingTimestamp = nil
         let userDefaults = UserDefaults.standard
         userDefaults.removeObject(forKey: WorkingSessionsManager.startWorkingTimestampUserDefaultsKey)
+        
+        
+        //Reload table view data from database.
+        //TODO: This is a temporary solution. Please add the segments above directly to the cache.
+        _tableViewDataCache = nil
     }
     
     
@@ -275,6 +280,150 @@ class WorkingSessionsManager {
     
     
     //MARK: - Raw data table view data.
+    private var _tableViewDataCache: [(year: Int32, month: Int32, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)])]?
+    
+    private func loadTableViewDataFromDatabase() {
+        guard let orderedAllDays = DatabaseManager.shared.getOrderedAllDays() else {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get all days data from database.")
+            return
+        }
+        
+        _tableViewDataCache = [(year: Int32, month: Int32, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)])]()
+        
+        var lastYear: Int32?
+        var lastMonth: Int32?
+        var lastDays: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)]?
+        for aDay in orderedAllDays {
+            //1. Update `lastYear`, `lastMonth` and `lastDays` if necessary.
+            if ((lastYear == nil) || (lastMonth == nil) || (lastDays == nil)) {
+                //Initialize `lastYear`, `lastMonth` and `lastDays`.
+                lastYear = aDay.year
+                lastMonth = aDay.month
+                lastDays = [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)]()
+            } else if (((lastYear != nil) && (lastMonth != nil)) && ((aDay.year != lastYear) || (aDay.month != lastMonth))) {
+                //The current day is on a different month or year.
+                //Save `lastYear`, `lastMonth` and `lastDays` in `_tableViewDataCache`.
+                _tableViewDataCache?.append((lastYear!, lastMonth!, lastDays!))
+                
+                //Update `lastYear`, `lastMonth` and `lastDays`.
+                lastYear = aDay.year
+                lastMonth = aDay.month
+                lastDays = [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)]()
+            }
+            
+            //2. Add current day to `lastDays`.
+            var dayHumanReadableString: String! = DateFormatter.getFormattedDateStringFromAnotherFormattedDateString(sourceDateString: "\(aDay.year) \(aDay.month) \(aDay.day)", sourceDateFormat: "y M d", resultDateStyle: .medium)
+            if (dayHumanReadableString == nil) {
+                ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to convert year (\(aDay.year)), month (\(aDay.month)) and day (\(aDay.day)) to human readable string.")
+                dayHumanReadableString = "\(aDay.year) \(aDay.month) \(aDay.day)"
+            }
+            
+            lastDays?.append((aDay.dayID, aDay.day, aDay.totalWorkingDuration))
+        }
+        
+        //Save the final month.
+        if ((lastYear != nil) && (lastMonth != nil)) {
+            //Save `lastYear`, `lastMonth` and `lastDays` in `_tableViewDataCache`.
+            _tableViewDataCache?.append((lastYear!, lastMonth!, lastDays!))
+        }
+    }
+    
+    /**
+     * Processed table view data.
+     *
+     * - Note: Both "year and month"s and "month and day"s are sorted from most recent to least recent.
+     */
+    var processedTableViewData: [(year: Int32, month: Int32, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)])]? {
+        if (_tableViewDataCache == nil) {
+            loadTableViewDataFromDatabase()
+        }
+        
+        //TODO: Count in current day working duration.
+        
+        return _tableViewDataCache
+    }
+    
+//    var processedTableViewData: [(yearAndMonthHumanReadableString: String, days: [(dayID: Int64, dayHumanReadableString: String, totalWorkingDuration: Int64)])]? {
+//        guard let orderedAllDays = DatabaseManager.shared.getOrderedAllDays() else {
+//            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get all days data from database.")
+//            return nil
+//        }
+//
+//        var returnValue = [(yearAndMonthHumanReadableString: String, days: [(dayID: Int64, dayHumanReadableString: String, totalWorkingDuration: Int64)])]()
+//
+//        var lastYear: Int32?
+//        var lastMonth: Int32?
+//        var lastDays: [(dayID: Int64, dayHumanReadableString: String, totalWorkingDuration: Int64)]?
+//        for aDay in orderedAllDays {
+//            //1. Update `lastYear`, `lastMonth` and `lastDays` if necessary.
+//            if ((lastYear == nil) || (lastMonth == nil) || (lastDays == nil)) {
+//                //Initialize `lastYear`, `lastMonth` and `lastDays`.
+//                lastYear = aDay.year
+//                lastMonth = aDay.month
+//                lastDays = [(dayID: Int64, dayHumanReadableString: String, totalWorkingDuration: Int64)]()
+//            } else if (((lastYear != nil) && (lastMonth != nil)) && ((aDay.year != lastYear) || (aDay.month != lastMonth))) {
+//                //The current day is on a different month or year.
+//                //Save `lastYear`, `lastMonth` and `lastDays` in `returnValue`.
+//                var yearAndMonthHumanReadableString: String! = DateFormatter.getFormattedDateStringFromAnotherFormattedDateString(sourceDateString: "\(lastYear!) \(lastMonth!)", sourceDateFormat: "y M", resultDateFormat: "MMMM y")
+//                if (yearAndMonthHumanReadableString == nil) {
+//                    ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to convert year (\(lastYear!)) and month (\(lastMonth!)) to human readable string.")
+//                    yearAndMonthHumanReadableString = "\(lastYear!) \(lastMonth!)"
+//                }
+//                returnValue.append((yearAndMonthHumanReadableString, lastDays!))
+//
+//                //Update `lastYear`, `lastMonth` and `lastDays`.
+//                lastYear = aDay.year
+//                lastMonth = aDay.month
+//                lastDays = [(dayID: Int64, dayHumanReadableString: String, totalWorkingDuration: Int64)]()
+//            }
+//
+//            //2. Add current day to `lastDays`.
+//            var dayHumanReadableString: String! = DateFormatter.getFormattedDateStringFromAnotherFormattedDateString(sourceDateString: "\(aDay.year) \(aDay.month) \(aDay.day)", sourceDateFormat: "y M d", resultDateStyle: .medium)
+//            if (dayHumanReadableString == nil) {
+//                ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to convert year (\(aDay.year)), month (\(aDay.month)) and day (\(aDay.day)) to human readable string.")
+//                dayHumanReadableString = "\(aDay.year) \(aDay.month) \(aDay.day)"
+//            }
+//
+//            lastDays?.append((aDay.dayID, dayHumanReadableString, aDay.totalWorkingDuration))
+//        }
+//
+//        //Save the final month.
+//        if ((lastYear != nil) && (lastMonth != nil)) {
+//            //Save `lastYear`, `lastMonth` and `lastDays` in `returnValue`.
+//            var yearAndMonthHumanReadableString: String! = DateFormatter.getFormattedDateStringFromAnotherFormattedDateString(sourceDateString: "\(lastYear!) \(lastMonth!)", sourceDateFormat: "y M", resultDateFormat: "MMMM y")
+//            if (yearAndMonthHumanReadableString == nil) {
+//                ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to convert year (\(lastYear!)) and month (\(lastMonth!)) to human readable string.")
+//                yearAndMonthHumanReadableString = "\(lastYear!) \(lastMonth!)"
+//            }
+//            returnValue.append((yearAndMonthHumanReadableString, lastDays!))
+//        }
+//
+//        return returnValue
+//    }
+//    var processedTableViewData: [(year: Int32, month: Int32, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)])]? {
+//        guard let orderedAllDays = DatabaseManager.shared.getOrderedAllDays() else {
+//            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get all days data from database.")
+//            return nil
+//        }
+//
+//        var returnValue = [(year: Int32, month: Int32, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)])]()
+//
+//        for aDay in orderedAllDays {
+//            if let previousLastMonth = returnValue.last {
+//                if ((aDay.year != previousLastMonth.year) || (aDay.month != previousLastMonth.month)) {
+//                    //Add new month.
+//                    returnValue.append((year: aDay.year, month: aDay.month, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)]()))
+//                }
+//            } else {
+//                //Add first month.
+//                returnValue.append((year: aDay.year, month: aDay.month, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)]()))
+//            }
+//
+//            returnValue.last?.days.append((dayID: aDay.dayID, day: aDay.day, totalWorkingDuration: aDay.totalWorkingDuration))
+//        }
+//
+//        return returnValue
+//    }
     ///Dirty. If `false`, `processedAllWorkSegmentsCache` is not up to date.
 //    var isProcessedAllWorkSegmentsDataUpToDate: Bool
     /**

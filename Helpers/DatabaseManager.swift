@@ -135,6 +135,8 @@ class DatabaseManager {
     //MARK: - Days table operations.
     //MARK: SELECT (multiple columns)
     /**
+     * Rows will be returned as is (might not be ordered).
+     *
      * - Returns:
      *   - `nil` if an error occured.
      *   - An empty array if there are no records.
@@ -148,6 +150,42 @@ class DatabaseManager {
         
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName
+        
+        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return nil
+        }
+        
+        var returnValue = [(dayID: Int64, startOfDayTimestamp: Int64, year: Int32, month: Int32, day: Int32, totalWorkingDuration: Int64)]()
+        while (sqlite3_step(statement) == SQLITE_ROW) {
+            let dayID = sqlite3_column_int64(statement, 0)
+            let startOfDayTimestamp = sqlite3_column_int64(statement, 1)
+            let year = sqlite3_column_int(statement, 2)
+            let month = sqlite3_column_int(statement, 3)
+            let day = sqlite3_column_int(statement, 4)
+            let totalWorkingDuration = sqlite3_column_int64(statement, 5)
+            
+            returnValue.append((dayID, startOfDayTimestamp, year, month, day, totalWorkingDuration))
+        }
+        
+        return returnValue
+    }
+    
+    /**
+     * The returned result will be ordered by older days first.
+     *
+     * - Returns:
+     *   - `nil` if an error occured.
+     *   - An empty array if there are no records.
+     */
+    func getOrderedAllDays() -> [(dayID: Int64, startOfDayTimestamp: Int64, year: Int32, month: Int32, day: Int32, totalWorkingDuration: Int64)]? {
+        if (!isDatabaseConnectionEstablished) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
+            return nil
+        }
+        
+        var statement: OpaquePointer?
+        let queryString = "SELECT * FROM " + DatabaseManager.daysTableName + " ORDER BY startOfDayTimestamp DESC;"
         
         if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
