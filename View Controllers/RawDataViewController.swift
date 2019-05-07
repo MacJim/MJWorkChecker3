@@ -82,8 +82,6 @@ class RawDataViewController: UITableViewController {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "RawDataViewController", functionName: #function, lineNumber: #line, errorDescription: "The dequeued cell is not an instance of `RawDataTableViewCell`!")
         }
         
-        // Configure the cell...
-        
         return cell
     }
 }
