@@ -17,6 +17,10 @@ class RawDataViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        if (!WorkingSessionsManager.shared.isProcessedTableViewDataUpToDate) {
+            self.tableView.reloadData()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {

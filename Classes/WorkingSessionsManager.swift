@@ -28,8 +28,7 @@ class WorkingSessionsManager {
             startWorkingTimestamp = nil
         }
         
-//        isProcessedAllWorkSegmentsDataUpToDate = false
-//        processedAllWorkSegmentsData = [Int: [Int: [Int: (totalWorkingDuration: Int64, segments: [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64)])]]]()
+        isProcessedTableViewDataUpToDate = false
     }
     
     
@@ -133,7 +132,7 @@ class WorkingSessionsManager {
         
         //Reload table view data from database.
         //TODO: This is a temporary solution. Please add the segments above directly to the cache.
-        _tableViewDataCache = nil
+        isProcessedTableViewDataUpToDate = false
     }
     
     
@@ -326,7 +325,11 @@ class WorkingSessionsManager {
             //Save `lastYear`, `lastMonth` and `lastDays` in `_tableViewDataCache`.
             _tableViewDataCache?.append((lastYear!, lastMonth!, lastDays!))
         }
+        
+        isProcessedTableViewDataUpToDate = true
     }
+    
+    var isProcessedTableViewDataUpToDate: Bool
     
     /**
      * Processed table view data.
@@ -334,7 +337,7 @@ class WorkingSessionsManager {
      * - Note: Both "year and month"s and "month and day"s are sorted from most recent to least recent.
      */
     var processedTableViewData: [(year: Int32, month: Int32, days: [(dayID: Int64, day: Int32, totalWorkingDuration: Int64)])]? {
-        if (_tableViewDataCache == nil) {
+        if (!isProcessedTableViewDataUpToDate) {
             loadTableViewDataFromDatabase()
         }
         
