@@ -151,7 +151,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -187,7 +187,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName + " ORDER BY startOfDayTimestamp DESC;"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -221,7 +221,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName + " WHERE startOfDayTimestamp>=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error , fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -261,7 +261,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName + " WHERE dayID=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -306,7 +306,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName + " WHERE year=? AND month=? AND day=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -361,7 +361,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.daysTableName + " WHERE startOfDayTimestamp=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -409,7 +409,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "INSERT INTO " + DatabaseManager.daysTableName + " VALUES(NULL, ?, ?, ?, ?, 0)"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing INSERT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -461,7 +461,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "UPDATE " + DatabaseManager.daysTableName + " SET totalWorkingDuration=totalWorkingDuration+? WHERE dayID=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -501,7 +501,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -533,7 +533,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName + " WHERE startWorkingTimestamp>=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error , fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -572,7 +572,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName + " WHERE segmentID>=? AND segmentID<=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -616,7 +616,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName + " WHERE segmentID=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -682,7 +682,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "INSERT INTO " + DatabaseManager.workSegmentsTableName + " VALUES(NULL, ?, ?, ?)"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing INSERT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -738,7 +738,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "UPDATE " + DatabaseManager.workSegmentsTableName + " SET startWorkingTimestamp=?, stopWorkingTimestamp=?, dayID=? WHERE segmentID=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
@@ -785,7 +785,7 @@ class DatabaseManager {
         var statement: OpaquePointer?
         let queryString = "DELETE FROM " + DatabaseManager.workSegmentsTableName + " WHERE segmentID=?"
         
-        if (sqlite3_prepare(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing DELETE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return false
         }
