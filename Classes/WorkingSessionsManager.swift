@@ -103,7 +103,7 @@ class WorkingSessionsManager {
                 if (segmentDuration != 0) {
                     //Update 2 tables.
                     if let currentDayIDInDatabase = todayIDInDatabase {
-                        DatabaseManager.shared.updateDayTotalWorkingDuration(workDurationToAdd: segmentDuration, dayID: currentDayIDInDatabase)
+                        DatabaseManager.shared.updateDayTotalWorkingDuration(workingDurationToAdd: segmentDuration, dayID: currentDayIDInDatabase)
                     } else {
                         ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get current day ID. This segment will not be logged in the `Days` table!")
                     }
@@ -117,7 +117,7 @@ class WorkingSessionsManager {
             if (segmentDuration != 0) {
                 //Update 2 tables.
                 if let currentDayIDInDatabase = todayIDInDatabase {
-                    DatabaseManager.shared.updateDayTotalWorkingDuration(workDurationToAdd: segmentDuration, dayID: currentDayIDInDatabase)
+                    DatabaseManager.shared.updateDayTotalWorkingDuration(workingDurationToAdd: segmentDuration, dayID: currentDayIDInDatabase)
                 } else {
                     ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get current day ID. This segment will not be logged in the `Days` table!")
                 }

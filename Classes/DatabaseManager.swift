@@ -445,43 +445,72 @@ class DatabaseManager {
     
     //MARK: UPDATE
     /**
-     * Adds `workDuration` to the day's `totalWorkingDuration`.
+     * Adds `workingDurationToAdd` to the day's `totalWorkingDuration`.
      *
      * - Returns:
      *   - `nil` if an error occured.
-     *   - A tuple containing all `nil`s if the update was considered successful, but the updated row could not be found. This might happen if `dayID` does not exist at all
-     *   - A tuple containing the created row if the creation was successful.
+     *   - A tuple containing all `nil`s if the update was considered successful, but the updated row could not be found. This might happen if `dayID` does not exist at all.
+     *   - A tuple containing the updated row if the update was successful.
      */
-    func updateDayTotalWorkingDuration(workDurationToAdd: Int64, dayID: Int64) -> (dayID: Int64?, startOfDayTimestamp: Int64?, year: Int32?, month: Int32?, day: Int32?, totalWorkingDuration: Int64?)? {
+    func updateDayTotalWorkingDuration(workingDurationToAdd: Int64, dayID: Int64) -> (dayID: Int64?, startOfDayTimestamp: Int64?, year: Int32?, month: Int32?, day: Int32?, totalWorkingDuration: Int64?)? {
         if (!isDatabaseConnectionEstablished) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
         }
-        
+
         var statement: OpaquePointer?
         let queryString = "UPDATE " + DatabaseManager.daysTableName + " SET totalWorkingDuration=totalWorkingDuration+? WHERE dayID=?"
-        
+
         if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
-        
-        if (sqlite3_bind_int64(statement, 1, workDurationToAdd) != SQLITE_OK) {
+
+        if (sqlite3_bind_int64(statement, 1, workingDurationToAdd) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `workDurationToAdd`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
-        
+
         if (sqlite3_bind_int64(statement, 2, dayID) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `dayID`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
-        
+
         if (sqlite3_step(statement) != SQLITE_DONE) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when executing UPDATE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
-        
+
         return getADay(dayID: dayID)
+    }
+    
+    
+    //MARK: DELETE
+    func deleteADay(dayID: Int64) -> Bool {
+        if (!isDatabaseConnectionEstablished) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
+            return false
+        }
+        
+        var statement: OpaquePointer?
+        let queryString = "DELETE FROM " + DatabaseManager.daysTableName + " WHERE dayID=?"
+        
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing DELETE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+        if (sqlite3_bind_int64(statement, 1, dayID) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `dayID`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+        if (sqlite3_step(statement) != SQLITE_DONE) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when executing DELETE: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return false
+        }
+        
+        return true
     }
     
     
@@ -584,6 +613,45 @@ class DatabaseManager {
         
         if (sqlite3_bind_int64(statement, 2, endID) != SQLITE_OK) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `endIndex`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return nil
+        }
+        
+        var returnValue = [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64, dayID: Int64)]()
+        while (sqlite3_step(statement) == SQLITE_ROW) {
+            let segmentID = sqlite3_column_int64(statement, 0)
+            let startWorkingTimestamp = sqlite3_column_int64(statement, 1)
+            let stopWorkingTimestamp = sqlite3_column_int64(statement, 2)
+            let dayID = sqlite3_column_int64(statement, 3)
+            
+            returnValue.append((segmentID, startWorkingTimestamp, stopWorkingTimestamp, dayID))
+        }
+        
+        return returnValue
+    }
+    
+    /**
+     * - Note: Both IDs are **inclusive**.
+     *
+     * - Returns:
+     *   - `nil` if an error occured.
+     *   - An empty array if there are no records.
+     */
+    func getWorkSegments(ofDay dayID: Int64) -> [(segmentID: Int64, startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64, dayID: Int64)]? {
+        if (!isDatabaseConnectionEstablished) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
+            return nil
+        }
+        
+        var statement: OpaquePointer?
+        let queryString = "SELECT * FROM " + DatabaseManager.workSegmentsTableName + " WHERE dayID=?"
+        
+        if (sqlite3_prepare_v2(databaseConnection, queryString, -1, &statement, nil) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when preparing SELECT: " + String(cString: sqlite3_errmsg(databaseConnection)!))
+            return nil
+        }
+        
+        if (sqlite3_bind_int64(statement, 1, dayID) != SQLITE_OK) {
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "Error when binding `dayID`: " + String(cString: sqlite3_errmsg(databaseConnection)!))
             return nil
         }
         
