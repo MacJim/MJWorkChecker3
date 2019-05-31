@@ -452,7 +452,7 @@ class DatabaseManager {
      *   - A tuple containing all `nil`s if the update was considered successful, but the updated row could not be found. This might happen if `dayID` does not exist at all.
      *   - A tuple containing the updated row if the update was successful.
      */
-    func updateDayTotalWorkingDuration(workingDurationToAdd: Int64, dayID: Int64) -> (dayID: Int64?, startOfDayTimestamp: Int64?, year: Int32?, month: Int32?, day: Int32?, totalWorkingDuration: Int64?)? {
+    @discardableResult func updateDayTotalWorkingDuration(workingDurationToAdd: Int64, dayID: Int64) -> (dayID: Int64?, startOfDayTimestamp: Int64?, year: Int32?, month: Int32?, day: Int32?, totalWorkingDuration: Int64?)? {
         if (!isDatabaseConnectionEstablished) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
@@ -741,7 +741,7 @@ class DatabaseManager {
      *   - A tuple containing all `nil`s if the insertion was considered successful, but the inserted row could not be found.
      *   - A tuple containing the created row if the creation was successful.
      */
-    func addAWorkSegment(startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64, dayID: Int64?) -> (segmentID: Int64?, startWorkingTimestamp: Int64?, stopWorkingTimestamp: Int64?, dayID: Int64?)? {
+    @discardableResult func addAWorkSegment(startWorkingTimestamp: Int64, stopWorkingTimestamp: Int64, dayID: Int64?) -> (segmentID: Int64?, startWorkingTimestamp: Int64?, stopWorkingTimestamp: Int64?, dayID: Int64?)? {
         if (!isDatabaseConnectionEstablished) {
             ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "DatabaseManager", functionName: #function, lineNumber: #line, errorDescription: "`databaseConnection` is `nil`!")
             return nil
