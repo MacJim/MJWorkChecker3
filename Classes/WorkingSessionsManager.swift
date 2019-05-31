@@ -9,12 +9,12 @@
 import Foundation
 
 
-private let singleton = WorkingSessionsManager()
-
 class WorkingSessionsManager {
     //MARK: - Singleton stuff.
+    private static let singleton = WorkingSessionsManager()
+    
     class var shared: WorkingSessionsManager {
-        return singleton
+        return WorkingSessionsManager.singleton
     }
     
     

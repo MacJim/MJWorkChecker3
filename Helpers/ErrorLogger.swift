@@ -34,12 +34,12 @@ enum ErrorLevel {
 }
 
 
-private let singleton = ErrorLogger()
-
 class ErrorLogger {
     //MARK: - Singleton stuff.
+    private static let singleton = ErrorLogger()
+    
     class var shared: ErrorLogger {
-        return singleton
+        return ErrorLogger.singleton
     }
     
     

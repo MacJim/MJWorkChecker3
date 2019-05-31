@@ -10,12 +10,12 @@ import Foundation
 import SQLite3
 
 
-private let singleton = DatabaseManager()
-
 class DatabaseManager {
     //MARK: - Singleton stuff.
+    private static let singleton = DatabaseManager()
+    
     class var shared: DatabaseManager {
-        return singleton
+        return DatabaseManager.singleton
     }
     
     
