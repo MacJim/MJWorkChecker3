@@ -95,19 +95,22 @@ class WorkingSessionsManager {
                 
                 currentSegmentStartWorkingDate = currentSegmentStartWorkingDate.startOfNextDay
             }
-            segments.append((Int64(currentSegmentStartWorkingDate.timeIntervalSince1970), currentTimestamp))
+            segments.append((Int64(currentSegmentStartWorkingDate.timeIntervalSince1970), currentTimestamp))    //Final segment.
             
             for aSegment in segments {
                 let segmentDuration = aSegment.stopWorkingTimestamp - aSegment.startWorkingTimestamp
                 //Ignore 0 length segments.
                 if (segmentDuration != 0) {
                     //Update 2 tables.
-                    if let currentDayIDInDatabase = todayIDInDatabase {
+                    let currentDayIDInDatabase = getDayIDFromTimestamp(timestamp: aSegment.startWorkingTimestamp)
+                    
+                    if let currentDayIDInDatabase = currentDayIDInDatabase {
                         DatabaseManager.shared.updateDayTotalWorkingDuration(workingDurationToAdd: segmentDuration, dayID: currentDayIDInDatabase)
                     } else {
                         ErrorLogger.shared.log(errorLevel: ErrorLevel.warning, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to get current day ID. This segment will not be logged in the `Days` table!")
                     }
-                    DatabaseManager.shared.addAWorkSegment(startWorkingTimestamp: aSegment.startWorkingTimestamp, stopWorkingTimestamp: aSegment.stopWorkingTimestamp, dayID: todayIDInDatabase)
+                    
+                    DatabaseManager.shared.addAWorkSegment(startWorkingTimestamp: aSegment.startWorkingTimestamp, stopWorkingTimestamp: aSegment.stopWorkingTimestamp, dayID: currentDayIDInDatabase)
                 }
             }
         } else {
@@ -136,7 +139,7 @@ class WorkingSessionsManager {
     }
     
     
-    //MARK: - Today ID in database.
+    //MARK: - Day ID in database.
     /**
      * Today's ID in database.
      *
@@ -158,19 +161,57 @@ class WorkingSessionsManager {
                     if let newDayID = newDay.dayID {
                         return newDayID
                     } else {
-                        //Could not find the newly created day.
-                        ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Could not find the newly created day.")
+                        //Cannot find the newly created day.
+                        ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Cannot find the newly created today row.")
                         return nil
                     }
                 } else {
                     //Failed to create today entry.
-                    ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to create today entry.")
+                    ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to create today row.")
                     return nil
                 }
             }
         } else {
             //An error occured when finding the existing entry.
             ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Cannot find current day ID in database.")
+            return nil
+        }
+    }
+    
+    /**
+     * Get a day's ID from a given timestamp.
+     *
+     * - Note: If the day does not exist in database, a new entry will be created.
+     *
+     * - Returns: If an error occured, `nil`.
+     */
+    func getDayIDFromTimestamp(timestamp: Int64) -> Int64? {
+        let givenDate = Date(timeIntervalSince1970: TimeInterval(timestamp))
+        let startOfDayTimestamp = Int64(givenDate.startOfDay.timeIntervalSince1970)
+        if let possibleExistingEntry = DatabaseManager.shared.getADay(startOfDayTimestamp: startOfDayTimestamp) {
+            if let existingDayID = possibleExistingEntry.dayID {
+                //An entry exists.
+                return existingDayID
+            } else {
+                //No day entry exists in the `Days` table. Create an entry.
+                let givenDayComponents = givenDate.components
+                if let newDay = DatabaseManager.shared.addADay(startOfDayTimestamp: startOfDayTimestamp, year: Int32(givenDayComponents.year), month: Int32(givenDayComponents.month), day: Int32(givenDayComponents.day)) {
+                    if let newDayID = newDay.dayID {
+                        return newDayID
+                    } else {
+                        //Cannot find the newly created day.
+                        ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Cannot find the newly created day row.")
+                        return nil
+                    }
+                } else {
+                    //Failed to create day entry.
+                    ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Failed to create day row.")
+                    return nil
+                }
+            }
+        } else {
+            //An error occured when finding the existing entry.
+            ErrorLogger.shared.log(errorLevel: ErrorLevel.error, fileName: #file, className: "WorkingSessionsManager", functionName: #function, lineNumber: #line, errorDescription: "Cannot find day ID in database.")
             return nil
         }
     }
