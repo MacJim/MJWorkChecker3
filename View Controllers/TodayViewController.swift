@@ -9,84 +9,105 @@
 import UIKit
 
 class TodayViewController: UIViewController {
-    //MARK: - IB outlets.
+    // MARK: - IB outlets.
     @IBOutlet weak var todayWorkDurationLabel: UILabel!
-    @IBOutlet weak var startOrStopWorkingButton: UIButton!
-
+    @IBOutlet weak var currentSessionWorkDurationLabel: UILabel!
     
-    //MARK: - IB actions.
-    @IBAction func startOrStopWorkingButtonPressed(_ sender: UIButton) {
-        let workingSessionsManager = WorkingSessionsManager.shared
-        if (workingSessionsManager.isWorkStarted) {
-            //Stop current working session.
-            workingSessionsManager.stopWorking()
-            stopUpdatingTodayWorkDurationLabelText()
-            updateTodayWorkDurationLabelText()
-        } else {
-            //Start a working session.
-            workingSessionsManager.startWorking()
-            startUpdatingTodayWorkDurationLabelText()
-        }
-        
-        updateStartOrStopWorkingButtonText()
-    }
+    @IBOutlet weak var tapAnywhereLabel: UILabel!
     
     
-    //MARK: - View presenting stuff.
+    // MARK: - View presenting stuff.
     override func viewDidLoad() {
         super.viewDidLoad()
         
         //Set monospace system font.
         todayWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: todayWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
+        currentSessionWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: currentSessionWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        updateTodayWorkDurationLabelText()
-        updateStartOrStopWorkingButtonText()
+        updateWorkDurationLabelsText()
+        updateTapAnywhereLabelText()
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         if (WorkingSessionsManager.shared.isWorkStarted) {
-            startUpdatingTodayWorkDurationLabelText()
+            startUpdatingWorkDurationLabelsText()
         }
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         
-        stopUpdatingTodayWorkDurationLabelText()
+        stopUpdatingWorkDurationLabelsText()
     }
     
     
-    //MARK: - Today work duration label text update.
-    private var updateTodayWorkDurationLabelTextTimer: Timer?
-    
-    private func startUpdatingTodayWorkDurationLabelText() {
-        updateTodayWorkDurationLabelTextTimer?.invalidate()
-        updateTodayWorkDurationLabelTextTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(TodayViewController.updateTodayWorkDurationLabelText), userInfo: nil, repeats: true)
-    }
-    private func stopUpdatingTodayWorkDurationLabelText() {
-        updateTodayWorkDurationLabelTextTimer?.invalidate()
-        updateTodayWorkDurationLabelTextTimer = nil
-    }
-    
-    @objc private func updateTodayWorkDurationLabelText() {
-        let todayWorkingDuration = WorkingSessionsManager.shared.todayWorkingDuration
+    // MARK: - UIResponder stuff
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
         
-        todayWorkDurationLabel.text = TimeInterval.convertSecondsToFormattedString(seconds: todayWorkingDuration)
+        startOrStopWorking()
     }
     
     
-    //MARK: - Start / stop working button text update.
-    private func updateStartOrStopWorkingButtonText() {
-        if (WorkingSessionsManager.shared.isWorkStarted) {
-            startOrStopWorkingButton.setTitle("Stop", for: UIControl.State.normal)
+    // MARK: - Start / stop working
+    func startOrStopWorking() {
+        let workingSessionsManager = WorkingSessionsManager.shared
+        
+        if (workingSessionsManager.isWorkStarted) {
+            // Stop current working session.
+            workingSessionsManager.stopWorking()
+            stopUpdatingWorkDurationLabelsText()
+            updateWorkDurationLabelsText()
+            updateTapAnywhereLabelText()
         } else {
-            startOrStopWorkingButton.setTitle("Start", for: UIControl.State.normal)
+            // Start a working session.
+            workingSessionsManager.startWorking()
+            updateWorkDurationLabelsText()    // Update text immediately to give the user a fast response.
+            startUpdatingWorkDurationLabelsText()
+            updateTapAnywhereLabelText()
+        }
+    }
+    
+    
+    // MARK: - Today work duration label text update
+    /// This timer updates the text of `todayWorkDurationLabel` and `currentSessionWorkDurationLabel`.
+    private var updateWorkDurationLabelsTextTimer: Timer?
+    
+    private func startUpdatingWorkDurationLabelsText() {
+        updateWorkDurationLabelsTextTimer?.invalidate()
+        updateWorkDurationLabelsTextTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(TodayViewController.updateWorkDurationLabelsText), userInfo: nil, repeats: true)
+    }
+    private func stopUpdatingWorkDurationLabelsText() {
+        updateWorkDurationLabelsTextTimer?.invalidate()
+        updateWorkDurationLabelsTextTimer = nil
+    }
+    
+    @objc private func updateWorkDurationLabelsText() {
+        let todayWorkingDuration = WorkingSessionsManager.shared.todayWorkingDuration
+        todayWorkDurationLabel.text = TimeInterval.convertSecondsToFormattedString(seconds: todayWorkingDuration)
+        
+        if let currentSessionWorkingDuration = WorkingSessionsManager.shared.currentSessionWorkingDuration {
+            currentSessionWorkDurationLabel.text = TimeInterval.convertSecondsToFormattedString(seconds: currentSessionWorkingDuration)
+        } else {
+            // Current session has not started.
+            currentSessionWorkDurationLabel.text = "N/A"
+        }
+    }
+    
+    
+    // MARK: - "Tap anywhere" label text update
+    private func updateTapAnywhereLabelText() {
+        if (WorkingSessionsManager.shared.isWorkStarted) {
+            tapAnywhereLabel.text = "Tap anywhere to stop."
+        } else {
+            tapAnywhereLabel.text = "Tap anywhere to start."
         }
     }
 }

@@ -382,7 +382,7 @@ class WorkingSessionsManager {
             loadTableViewDataFromDatabase()
         }
         
-        //TODO: Count in current day working duration.
+        //TODO: Count in current working session.
         
         return _tableViewDataCache
     }
