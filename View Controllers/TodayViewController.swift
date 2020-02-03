@@ -20,7 +20,7 @@ class TodayViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //Set monospace system font.
+        // Set monospace system font.
         todayWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: todayWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
         currentSessionWorkDurationLabel.font = UIFont.monospacedDigitSystemFont(ofSize: currentSessionWorkDurationLabel.font.pointSize, weight: UIFont.Weight.regular)
     }
@@ -30,7 +30,6 @@ class TodayViewController: UIViewController {
         
         updateWorkDurationLabelsText()
         updateTapAnywhereLabelText()
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -39,12 +38,18 @@ class TodayViewController: UIViewController {
         if (WorkingSessionsManager.shared.isWorkStarted) {
             startUpdatingWorkDurationLabelsText()
         }
+        
+        // Update work duration when app becomes active.
+        NotificationCenter.default.addObserver(self, selector: #selector(TodayViewController.updateWorkDurationLabelsText), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         
         stopUpdatingWorkDurationLabelsText()
+        
+        // Stop updating work duration when this view controller is inactive.
+        NotificationCenter.default.removeObserver(self)
     }
     
     
@@ -89,6 +94,7 @@ class TodayViewController: UIViewController {
         updateWorkDurationLabelsTextTimer = nil
     }
     
+    /// This function is also called when the app launches from the background.
     @objc private func updateWorkDurationLabelsText() {
         let todayWorkingDuration = WorkingSessionsManager.shared.todayWorkingDuration
         todayWorkDurationLabel.text = TimeInterval.convertSecondsToFormattedString(seconds: todayWorkingDuration)

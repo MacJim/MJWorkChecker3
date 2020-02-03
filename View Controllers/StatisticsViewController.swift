@@ -43,12 +43,18 @@ class StatisticsViewController: UIViewController {
         if (WorkingSessionsManager.shared.isWorkStarted) {
             startUpdatingWorkDurationLabelsText()
         }
+        
+        // Update work duration when app becomes active.
+        NotificationCenter.default.addObserver(self, selector: #selector(StatisticsViewController.updateWorkDurationLabelsText), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         
         stopUpdatingWorkDurationLabelsText()
+        
+        // Stop updating work duration when this view controller is inactive.
+        NotificationCenter.default.removeObserver(self)
     }
     
     
@@ -64,7 +70,7 @@ class StatisticsViewController: UIViewController {
         updateWorkDurationLabelsTextTimer = nil
     }
     
-    @objc func updateWorkDurationLabelsText() {
+    @objc private func updateWorkDurationLabelsText() {
         let past7DaysWorkingDuration = WorkingSessionsManager.shared.past7DaysWorkingDuration
         let past30DaysWorkingDuration = WorkingSessionsManager.shared.past30DaysWorkingDuration
         
